@@ -1,0 +1,70 @@
+# Bridge Project — Cursor Context
+
+You are assisting the Bridge Team at SPS Commerce. Bridge people (Radmilo, Katie, Joe) act as the intermediary between Marketing (ClickUp) and the dev team (Jira). Your job is to help them create, update, and re-run project docs in ClickUp using CU data fetched via MCP.
+
+---
+
+## Key references
+
+**CU workspace ID:** `9003000798`
+**CU Projects doc folder:** `8c9xryy-117351` (all bridge project docs live here)
+**CU Projects folder URL:** `https://app.clickup.com/9003000798/v/dc/8c9xryy-117351`
+
+**Template:** `bridge/template.md` — always follow this exactly
+**Examples:**
+- `bridge/examples/retailer-pages/` — multi-task, simple (no Dev Brief)
+- `bridge/examples/industry-pages/` — multi-task, phased
+- `bridge/examples/new-search/` — single task, research phase
+**Prompts:** `bridge/prompts/` — 01-create-doc, 02-update-doc, 03-rerun-doc
+
+Before generating any doc output, read the relevant example file. Match its structure, section order, heading levels, checkbox format, and level of detail exactly. The example is the standard — not just the template.
+
+---
+
+## Doc rules
+
+- **One doc per product area** — before creating a new doc, check the CU Projects folder. If one exists for this area, update it.
+- **What's Missing is a live view** — reflects current active gaps only. When a wave completes, its block moves to Learnings.
+- **Problem and Decision are per wave** — when a wave closes they move to Learnings, main doc shows current wave only.
+- **Inputs & Decisions is append-only** — never delete existing entries. New entries go at the bottom with date, person, source.
+- **Bridge To-Dos are not CU tasks** — @mentions in the doc only. Bridge assigns manually.
+- **Build and SEO run in parallel** — Launch is blocked until both are done.
+- **Bridge QA happens after dev build, before launch** — dev posts "ready for QA" on the CU task, bridge reviews via QA Excel.
+- **Jira task description must always include the CU task link** so dev knows where to post the ready-for-QA comment.
+
+---
+
+## What's Missing format
+
+Per task, use `###` heading with CU task link and dev name, checkboxes with no blank line between heading and list:
+
+```
+### [Task name (MO-XXXXX)](https://app.clickup.com/t/9003000798/MO-XXXXX) · Dev: [name or "not assigned"]
+- [x] Copy
+- [ ] Build & QA — [status]
+- [ ] Bridge QA
+- [ ] Metadata / SEO Review — [status] ([owner])
+- [ ] Launch
+```
+
+For phased projects (e.g. Industry Pages), group by phase: Phase 1, Phase 2, Phase 3 — each with its own Bridge QA.
+
+---
+
+## When fetching CU data
+
+- Fetch task details: title, description, assignees, status, subtasks with their statuses and assignees
+- Fetch comments for Inputs & Decisions
+- Convert timestamps to YYYY-MM-DD dates
+- Only include comments that contain decisions, key information, or blockers — skip automated bot comments and routine pings
+- If a task cannot be fetched, flag it with ⚠ and note to re-run
+
+---
+
+## Output behaviour
+
+- Always show the result for review before pushing to CU
+- When pushing to CU, update the existing page — do not create a new one unless explicitly creating a new project
+- Save local md files in `docs/examples/[project-folder]/`
+- Never change Problem, Decision, or Bridge Checklist unless there is clearly new information that requires it
+- Do not change Inputs & Decisions entries that already exist — append only
