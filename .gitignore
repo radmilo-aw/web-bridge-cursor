@@ -1,6 +1,14 @@
-.env
-.DS_Store
-__pycache__/
-*.pyc
-data/
-.claude/
+# Ignore everything by default
+*
+
+# Track only what bridge people need
+!.gitignore
+!CLAUDE.md
+!.cursor/
+!.cursor/rules/
+!.cursor/rules/**
+!bridge/
+!bridge/**
+
+# Re-ignore system files within tracked folders
+**/.DS_Store
