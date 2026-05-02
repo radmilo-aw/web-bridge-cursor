@@ -4,11 +4,18 @@
 # Track only what bridge people need
 !.gitignore
 !CLAUDE.md
+!README.md
 !.cursor/
 !.cursor/rules/
 !.cursor/rules/**
-!bridge/
-!bridge/**
+!docs/
+!docs/**
+!standup/
+!standup/**
+!n8n-workflows/
+!n8n-workflows/**
+!tasks_pm/
+!tasks_pm/**
 
 # Re-ignore system files within tracked folders
 **/.DS_Store

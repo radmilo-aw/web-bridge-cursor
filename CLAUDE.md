@@ -6,48 +6,52 @@ A workflow design and implementation project for a web team inside a Marketing C
 
 This is a test project to prove the concept works. Once validated, a new project will be set up with the real client Jira and ClickUp.
 
-Doc generation for bridge people runs via **Cursor + CU MCP** — all 3 bridge people have Cursor licences, not all have Claude. Cursor connects to CU API via MCP so bridge can generate project docs without scripts.
+**Working setup (Radmilo):** Cursor is the single editor — one folder (`Bridge_Project`), one git repo. Claude Code CLI runs in Cursor's integrated terminal. Cursor's built-in AI is not used — all AI work goes through Claude Code CLI.
 
-**Working setup (Radmilo):** Cursor is the single editor for this project — replaces VS Code, one folder (`Bridge_Project`), one git repo. Claude Code CLI runs in Cursor's integrated terminal. Cursor's built-in AI is not used — all AI work goes through Claude Code CLI.
+**Doc creation:** Claude Code CLI only. Cursor MCP packages can read CU tasks/docs but cannot create docs — doc creation requires the `claude.ai` ClickUp MCP, which is account-level and only available in Claude Code CLI. Katie and Joe take on doc creation once they have Claude licences; a new co-work project will be set up at that point based on this one.
+
+**CU MCP — Claude Code CLI connections:**
+- `@taazkareem/clickup-mcp-server` → task reads/writes — **✅ Connected**
+- `claude.ai` ClickUp MCP → doc creation (`clickup_create_document`, `clickup_create_document_page`) — **✅ Connected**
+- Google Drive MCP: claude.ai account-level integration, not used here — shows as "needs auth" in `claude mcp list`, ignore it
 
 ---
 
 ## Reference docs — read these when relevant
 
+**Local:**
 | File | Contents |
 |------|----------|
 | `docs/team-and-roles.md` | All team profiles, org context, external stakeholders |
-| `docs/scenarios-and-edge-cases.md` | 10 real scenarios with CU evidence — rebuilt 2026-04-19 from full 187-task pull |
-| `docs/diagrams/01-industry-pages-reality.md` | Industry Pages timeline and gap analysis — real failure evidence |
-| `docs/session-log.md` | Full history of what was done and decided each session |
-| `bridge/template.md` | Project doc template — structure for all CU project docs bridge creates |
-| `bridge/examples/` | Filled-in examples per project (industry-pages/, new-search/) — one file per CU doc page |
+| `docs/scenarios-and-edge-cases.md` | 10 real scenarios with CU evidence — why the bridge system must exist |
+| `docs/standup-design.md` | Standup structure, 5 agenda buckets, intake assessment rules |
+| `docs/design-history.md` | What we tried before landing on the current design — key pivots and why |
 
-**Archived docs** (old design — do not use as reference): `docs/archive/`
+**CU — read live via MCP when needed:**
+| What | Where |
+|------|-------|
+| Project doc examples (structure, sections, real content) | CU Projects folder: `https://app.clickup.com/9003000798/v/dc/8c9xryy-117351` |
+| Standup call doc examples (structure, Overview, Decisions) | CU Bridge Standup doc — parent doc ID `8c9xryy-118171` |
 
 ---
 
 ## Project folder structure
 
 ```
-bridge-team/
+Bridge_Project/
 ├── CLAUDE.md                    ← you are here — always in root
-├── bridge/                      ← bridge people's source files (template, examples)
-│   ├── template.md              ← project doc template for CU docs
-│   └── examples/                ← filled-in examples per project type
-├── docs/                        ← system design, team profiles, session log (dev only)
-├── n8n-workflows/               ← workflow JSON files, numbered prefix (e.g. 01-name.json)
-├── runbooks/                    ← setup and operational notes
-└── scripts/                     ← Jira API scripts (pilot testing)
+├── docs/                        ← system design, team profiles, scenarios, design history
+├── standup/                     ← local standup doc copies, one MD per working day (YYYY-MM-DD.md)
+├── tasks_pm/                    ← PM reference files (SEO migration, press center, etc.) — not bridge workflow
+└── n8n-workflows/               ← workflow JSON files, numbered prefix (e.g. 01-name.json)
 ```
 
-**CU data — use MCP directly:** CU tasks, comments, and status are fetched live via CU MCP in Cursor. No scripts or local JSON snapshots needed.
+**CU data — use MCP directly:** CU tasks, comments, and status are fetched live via CU MCP. No scripts or local JSON snapshots needed.
 
 **Rules for Claude when creating new files:**
 - n8n workflow JSON → `n8n-workflows/`, numbered prefix
-- Operational runbooks and pilot notes → `runbooks/`
 - System design updates → `docs/`
-- Bridge people's working files (template, examples) → `bridge/`
+- Standup docs → `standup/YYYY-MM-DD.md`
 - Never create files in the root except `CLAUDE.md`
 - Create folders when the first file is needed — do not create empty folders
 
@@ -119,13 +123,63 @@ New development: bridge team has a dedicated Web folder in SPS Marketing CU spac
 - Complex tasks (new feature, new page, research needed, multi-task project): bridge creates Project doc at Defining stage
 - Signal that doc exists: paste CU doc link into the `Project Brief` field on the task
 
-**Cursor + CU MCP setup (Radmilo next — immediate):**
-- Cursor opened on `Bridge_Project` folder — single editor, one git repo, Claude Code CLI in integrated terminal
-- CU MCP config needed in Cursor settings (`.cursor/mcp.json`) with Radmilo's CU API key
-- All 3 bridge people use Cursor for doc generation (claude-sonnet-4-6 model via CU MCP)
-- Radmilo + Katie share Cursor budget with other dev work; Joe's budget mostly free — Joe handles heavy batch doc generation
-- Each person configures CU MCP once in Cursor settings with their own CU API key
-- Set up Radmilo first, validate, then write `BRIDGE.md` setup instructions for Katie and Joe
+**Claude Code CLI setup:**
+- ✅ Radmilo: `@taazkareem/clickup-mcp-server` + `claude.ai` ClickUp MCP both connected
+- ⏳ Katie and Joe: pending Claude licences — co-work project set up when licences land
+
+**Standup doc workflow:**
+
+Two commands Radmilo runs each working day (Mon–Fri only):
+
+1. **Morning — generate standup:**
+   - Check today is a working day (Mon–Fri) — stop if not
+   - Find the most recent page in Bridge Standup doc (`8c9xryy-118171`)
+   - Carry forward any unchecked `- [ ]` questions per person (Joe, Katie, Radmilo) from that page
+   - Query New Intake (`901113657903`) and Site Bug & Updates (`901113645407`) for tasks created after that page's date
+   - Query Defining (`901113657911`) for tasks due within 3 days (overdue or upcoming) — show only those; if none, write "Nothing due within 3 days"
+   - Save to `standup/YYYY-MM-DD.md` — Radmilo reviews
+   - On approval: create new CU page in doc `8c9xryy-118171` with today's date as title
+
+**New Intake section format — each task is an H4 heading (collapsible in CU), grouped by status:**
+- **Exclude** tasks with these statuses: `live / launched`, `complete`, `closed`, `done`, `approved`
+- Status group order (most actionable first): Ready for Review → Dev in Progress → In Progress → Queued → New Intake → Backlog → Stuck / Blocked
+- Within each status group: sort overdue first (ascending by date), then upcoming (ascending), then no due date
+- Omit groups that have no tasks
+
+Per-task block structure:
+```
+#### [MO-XXXXX](url) — Task Name
+- **Due:** [date] · [X days overdue / in X days]   ← omit Due line if no due date
+- **Status:** [status]
+- **Owner:** [name or —]
+- **Requestor:** [creator name]
+
+> One-sentence overview of what the task is asking for.
+```
+Overview is a blockquote (`>`), not a bullet — keeps it visually distinct.
+
+2. **After call — sync:**
+   - Read the CU page for today's date from doc `8c9xryy-118171`
+   - Overwrite `standup/YYYY-MM-DD.md` with the final version (includes decisions filled during call)
+
+**IMPORTANT — how to query bridge lists via API:**
+Bridge lists use **secondary list membership** — tasks originate in "All Marketing Requests" (primary list) and are added to bridge lists as secondary lists. `get_tasks` by list ID only returns primary-list tasks and will return 0 for all bridge lists.
+
+**Always use `clickup_search` with `filters.location.subcategories`:**
+```
+filters: {
+  asset_types: ["task"],
+  location: { subcategories: ["<list_id>"] },
+  created_date_from: "YYYY-MM-DD"   ← optional, for "new since" queries
+}
+```
+This applies to all 5 bridge lists and Site Bug & Updates. The `@taazkareem` `get_tasks` tool and `clickup_filter_tasks` both fail for these lists.
+
+**Local standup files (`standup/`) accumulate over time** — use them to spot patterns: tasks sitting in New Intake across multiple days, recurring question types, questions carried forward repeatedly.
+
+**n8n will automate the morning generation** once the Claude Code CLI flow is validated. The local copy remains even after n8n takes over.
+
+---
 
 **Automation vision — post-pilot only, do not build yet:**
 
@@ -134,9 +188,9 @@ Bridge workflow has three layers — pilot proves the process manually first, au
 | Layer | Tool | When |
 |---|---|---|
 | Bridge creates project doc, adds connected tasks | Manual | Always — bridge judgment |
-| Cursor populates/re-runs project doc from CU data | Cursor + CU MCP | Bridge-triggered |
-| Cursor generates Dev Brief | Cursor + CU MCP | Bridge-triggered when phase is ready |
-| n8n generates daily standup subdoc in CU | n8n | Automated, every morning |
+| Claude Code CLI populates/re-runs project doc from CU data | Claude Code CLI | Bridge-triggered |
+| Claude Code CLI generates Dev Brief | Claude Code CLI | Bridge-triggered when phase is ready |
+| Claude Code CLI generates daily standup page → local MD + CU | Claude Code CLI | Manual now — n8n automates once flow is validated |
 | n8n re-runs all active project docs (new CU comments, subtask statuses) | n8n | Automated, every morning |
 | CU Notetaker captures standup decisions → n8n appends to project docs | n8n + CU Notetaker | Triggered when notetaker output lands |
 | n8n creates Jira epic + tasks when Dev Brief marked Ready | n8n | Triggered by Dev Brief status change |
@@ -145,18 +199,12 @@ Bridge workflow has three layers — pilot proves the process manually first, au
 CU Doc structure for standup: Web folder → Bridge Standup (parent doc) → one subdoc per day (generated by n8n).
 
 **What to do next:**
-1. ✅ Create 5 bridge lists in SPS Web folder
-2. ✅ New Intake columns configured
-3. ✅ Defining columns configured (Web Bridge Status as text field interim — values typed manually until admin converts)
-4. ✅ Project doc template designed (`docs/bridge-doc-template.md`) + examples (`docs/examples/`)
-5. Send admin request to rename/convert Web Team Assignment fields (request drafted above)
-6. **BLOCKED: Ready for Dev, Dev in Progress, Parked columns — do not configure until Dev Brief template done**
-7. Finish Dev Brief template + example
-8. **NEXT: Set up CU MCP in Cursor (Radmilo first)** — open Bridge_Project in Cursor, configure `.cursor/mcp.json` with CU API key, validate
-9. Write `BRIDGE.md` — Cursor instructions for bridge people (populate doc, re-run, generate Dev Brief) — after Radmilo's setup validated
-10. Set up CU MCP for Katie and Joe (after BRIDGE.md written)
-11. Set up space-level automation in CU UI: task assigned to Web Team Admin → move to New Intake list
-12. Pilot with real tasks
+1. Build and validate standup doc generation via Claude Code CLI — use existing CU Bridge Standup docs as reference; n8n automates this post-pilot
+2. Build Dev Brief template — read existing CU project docs as reference
+3. **BLOCKED: Configure Ready for Dev, Dev in Progress, Parked columns** — do not configure until Dev Brief template is done
+4. Send admin request to rename/convert Web Team Assignment fields — send once workflow is validated
+5. Set up space-level automation in CU UI: task assigned to Web Team Admin → move to New Intake list
+6. Pilot with real tasks
 
 ---
 
@@ -169,8 +217,8 @@ CU Doc structure for standup: Web folder → Bridge Standup (parent doc) → one
 5. ✅ Designed the system — bridge CU workflow confirmed, 5 lists created in SPS Web folder
 6. ✅ New Intake + Defining columns configured in CU UI
 7. **Now: Build templates (Dev Brief → project doc → Jira ticket mapping) before configuring remaining lists**
-7. Pilot the new design manually
-8. Document pilot findings
-9. Build automation — only after pilot proves the process
-10. Present to bridge team (Joe, Radmilo, Katie)
-11. Present to head of COE
+8. Pilot the new design manually
+9. Document pilot findings
+10. Build automation — only after pilot proves the process
+11. Present to bridge team (Joe, Radmilo, Katie)
+12. Present to head of COE
