@@ -100,15 +100,23 @@ New development: bridge team has a dedicated Web folder in SPS Marketing CU spac
 - Testing target: askonweb.atlassian.net BTP project
 
 **SPS Web folder IDs (for reference):**
-- Folder: `90117842910` | Web Team Work list: `901112557134` | Site Bug & Updates list: `901113645407`
+- Folder: `90117842910` | Web Team Work list: `901112557134` | Site Bug & Updates Intake: `901113645407`
 - Web Team Admin group ID: `e5f4f415-15d5-4f9c-8f5f-3f06d61bacbd`
 
-**Bridge lists in SPS Web folder (created 2026-04-24):**
+**Bridge lists in SPS Web folder:**
 - New Intake: `901113657903`
 - Defining: `901113657911`
 - Ready for Dev: `901113657913`
 - Dev in Progress: `901113657914`
+- In Review: `901113707056`
+- Stuck: `901113707061`
+- Done: `901113707066`
 - Parked: `901113657916`
+- Web Team Work: `901112557134` — **not used by bridge**, do not query or display
+
+**CU docs in Web folder:**
+- Projects (doc) — project briefs and dev briefs
+- Bridge Calls (doc) — standup pages, parent doc ID `8c9xryy-118171`
 
 **Personal workspace prototype: skipped** — MCP access to SPS CU means we build directly in SPS Web folder where all 3 bridge people already have access.
 
@@ -129,55 +137,9 @@ New development: bridge team has a dedicated Web folder in SPS Marketing CU spac
 
 **Standup doc workflow:**
 
-Two commands Radmilo runs each working day (Mon–Fri only):
+Two commands Radmilo runs each working day (Mon–Fri only): morning generate + after-call sync.
 
-1. **Morning — generate standup:**
-   - Check today is a working day (Mon–Fri) — stop if not
-   - Find the most recent page in Bridge Standup doc (`8c9xryy-118171`)
-   - Carry forward any unchecked `- [ ]` questions per person (Joe, Katie, Radmilo) from that page
-   - Query New Intake (`901113657903`) and Site Bug & Updates (`901113645407`) for tasks created after that page's date
-   - Query Defining (`901113657911`) for tasks due within 3 days (overdue or upcoming) — show only those; if none, write "Nothing due within 3 days"
-   - Save to `standup/YYYY-MM-DD.md` — Radmilo reviews
-   - On approval: create new CU page in doc `8c9xryy-118171` with today's date as title
-
-**New Intake section format — each task is an H4 heading (collapsible in CU), grouped by status:**
-- **Exclude** tasks with these statuses: `live / launched`, `complete`, `closed`, `done`, `approved`
-- Status group order (most actionable first): Ready for Review → Dev in Progress → In Progress → Queued → New Intake → Backlog → Stuck / Blocked
-- Within each status group: sort overdue first (ascending by date), then upcoming (ascending), then no due date
-- Omit groups that have no tasks
-
-Per-task block structure:
-```
-#### [MO-XXXXX](url) — Task Name
-- **Due:** [date] · [X days overdue / in X days]   ← omit Due line if no due date
-- **Status:** [status]
-- **Owner:** [name or —]
-- **Requestor:** [creator name]
-
-> One-sentence overview of what the task is asking for.
-```
-Overview is a blockquote (`>`), not a bullet — keeps it visually distinct.
-
-2. **After call — sync:**
-   - Read the CU page for today's date from doc `8c9xryy-118171`
-   - Overwrite `standup/YYYY-MM-DD.md` with the final version (includes decisions filled during call)
-
-**IMPORTANT — how to query bridge lists via API:**
-Bridge lists use **secondary list membership** — tasks originate in "All Marketing Requests" (primary list) and are added to bridge lists as secondary lists. `get_tasks` by list ID only returns primary-list tasks and will return 0 for all bridge lists.
-
-**Always use `clickup_search` with `filters.location.subcategories`:**
-```
-filters: {
-  asset_types: ["task"],
-  location: { subcategories: ["<list_id>"] },
-  created_date_from: "YYYY-MM-DD"   ← optional, for "new since" queries
-}
-```
-This applies to all 5 bridge lists and Site Bug & Updates. The `@taazkareem` `get_tasks` tool and `clickup_filter_tasks` both fail for these lists.
-
-**Local standup files (`standup/`) accumulate over time** — use them to spot patterns: tasks sitting in New Intake across multiple days, recurring question types, questions carried forward repeatedly.
-
-**n8n will automate the morning generation** once the Claude Code CLI flow is validated. The local copy remains even after n8n takes over.
+**Full instructions → `standup/standup-instructions.md`** — read that file before running either command. It covers: query steps, list IDs, API method (secondary list membership via `clickup_search` subcategories), section rules, per-task formats, table format for Active Work, and the complete doc structure template.
 
 ---
 
